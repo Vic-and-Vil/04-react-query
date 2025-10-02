@@ -1,4 +1,5 @@
-import { useState, useEffect, type ReactElement } from "react";
+// src/components/App/App.tsx
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Toaster, toast } from "react-hot-toast";
 import ReactPaginate from "react-paginate";
@@ -9,21 +10,21 @@ import MovieModal from "../MovieModal/MovieModal";
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 
-import { fetchMovies } from "../../services/movieService";
+import { fetchMovies, type MoviesResponse } from "../../services/movieService";
 import type { Movie } from "../../types/movie";
 
 import css from "./App.module.css";
 
-export default function App(): ReactElement {
+export default function App() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const { data, isError, isLoading, isSuccess, isFetching } = useQuery({
+  const { data, isError, isLoading, isSuccess, isFetching } = useQuery<MoviesResponse>({
     queryKey: ["movies", query, page],
     queryFn: () => fetchMovies(query, page),
     enabled: Boolean(query),
-    keepPreviousData: true,
+    placeholderData: (prev) => prev,
   });
 
   const movies = data?.results ?? [];
@@ -44,11 +45,9 @@ export default function App(): ReactElement {
         }}
       />
 
-      {isError && <ErrorMessage /> >
-        (
+      {isError && (
         <ErrorMessage message="There was an error, please try again..." />
-      )
-    }
+      )}
 
       {query && (isLoading || isFetching) && <Loader />}
 

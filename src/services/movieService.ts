@@ -1,15 +1,27 @@
-import axios, { AxiosResponse } from "axios";
-import { MoviesResponse } from "../types/movie";
 
-const BASE_URL = "https://api.themoviedb.org/3/search/movie";
+import axios from "axios";
+import type { Movie } from "../types/movie";
 
-export async function fetchMovies(query: string, page: number): Promise<MoviesResponse> {
-  const response: AxiosResponse<MoviesResponse> = await axios.get(BASE_URL, {
+// опис відповіді API ТУТ, а не в movie.ts
+export interface MoviesResponse {
+  page: number;
+  results: Movie[];
+  total_pages: number;
+  total_results: number;
+}
+
+const API_URL = "https://api.themoviedb.org/3/search/movie";
+const TOKEN = import.meta.env.VITE_TMDB_TOKEN; // з .env
+
+export async function fetchMovies(
+  query: string,
+  page: number
+): Promise<MoviesResponse> {
+  const { data } = await axios.get<MoviesResponse>(API_URL, {
     params: { query, page },
     headers: {
-      Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjYWJlODc5NDNjZjdlOTRlYjM4OWVmMWUxODA3ZDk3OSIsIm5iZiI6MTc1OTI1MTI1MC44NjksInN1YiI6IjY4ZGMwYjMyNTViN2I0MDYxZmM3NzFiMiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.hqLNr-NwPUKeGervSCeqojeGsmakmq-3C0AC1j74AqI`,
+      Authorization: `Bearer ${TOKEN}`,
     },
   });
-
-  return response.data;
+  return data;
 }

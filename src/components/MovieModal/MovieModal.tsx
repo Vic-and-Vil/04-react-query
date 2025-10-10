@@ -1,44 +1,48 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import styles from "./MovieModal.module.css";
 import type { Movie } from "../../types/movie";
+import styles from "./MovieModal.module.css";
 
 interface MovieModalProps {
   movie: Movie;
   onClose: () => void;
 }
 
-const modalRoot = document.getElementById("modal-root") as HTMLElement;
-
 export default function MovieModal({ movie, onClose }: MovieModalProps) {
+  // Використовуємо document.body як fallback (гарантовано існує)
+  const modalRoot = document.getElementById("modal-root") ?? document.body;
+
+  // Закриття по клавіші Escape
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden"; // блокування скролу
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = ""; // відновлення скролу
     };
   }, [onClose]);
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.currentTarget === e.target) {
+  // Закриття по кліку на backdrop
+  const handleBackdropClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
       onClose();
     }
   };
 
-  return createPortal(
+  // JSX контент модалки
+  const modalContent = (
     <div
       className={styles.backdrop}
+      onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
-      onClick={handleBackdropClick}
     >
       <div className={styles.modal}>
         <button
@@ -64,7 +68,8 @@ export default function MovieModal({ movie, onClose }: MovieModalProps) {
           </p>
         </div>
       </div>
-    </div>,
-    modalRoot
+    </div>
   );
+
+  return createPortal(modalContent, modalRoot);
 }
